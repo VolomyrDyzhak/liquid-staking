@@ -68,4 +68,24 @@ contract LiquidStakingTest is Test {
         vm.stopPrank();
         assertEq(alice.balance, 100 ether);
     }
+
+    function test_zeroSharesDepositReverts() public {
+        vm.prank(alice);
+        staking.deposit{value: 10 ether}();
+        staking.reportRewards{value: 1 ether}(); // ratio 1.1
+
+        vm.prank(bob);
+        vm.expectRevert("Shares cero");
+        staking.deposit{value: 1}(); // 1 wei -> 0 shares por redondeo
+    }
+
+    function test_extremeRateDoesNotSwallowDeposit() public {
+        vm.prank(alice);
+        staking.deposit{value: 1}(); // 1 wei -> 1 share
+        staking.reportRewards{value: 10 ether}(); // ratio enorme
+
+        vm.prank(bob);
+        vm.expectRevert("Shares cero");
+        staking.deposit{value: 5 ether}(); // 5 ETH -> 0 shares
+    }
 }
