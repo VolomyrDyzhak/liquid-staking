@@ -24,6 +24,7 @@ contract LiquidStaking is ERC20, Ownable, ReentrancyGuard {
         uint256 shares = totalSupply() == 0
             ? msg.value
             : (msg.value * totalSupply()) / totalPooledEth;
+        require(shares > 0, "Shares cero");
         totalPooledEth += msg.value;
         _mint(msg.sender, shares);
         emit Deposited(msg.sender, msg.value, shares);
