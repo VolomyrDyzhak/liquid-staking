@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import {Test} from "forge-std/Test.sol";
+import {LiquidStaking} from "../src/LiquidStaking.sol";
+
+contract LiquidStakingTest is Test {
+    LiquidStaking staking;
+    address alice = makeAddr("alice");
+    address bob = makeAddr("bob");
+
+    function setUp() public {
+        staking = new LiquidStaking();
+        vm.deal(alice, 100 ether);
+        vm.deal(bob, 100 ether);
+    }
+
+    function test_firstDepositMintsOneToOne() public {
+        vm.prank(alice);
+        staking.deposit{value: 10 ether}();
+        assertEq(staking.balanceOf(alice), 10 ether);
+        assertEq(staking.exchangeRate(), 1 ether);
+    }
+
+    function test_rewardsIncreaseRate() public {
+        vm.prank(alice);
+        staking.deposit{value: 10 ether}();
+        staking.reportRewards{value: 1 ether}();
+        assertEq(staking.exchangeRate(), 1.1 ether);
+    }
+
+    function test_secondDepositorGetsFewerShares() public {
+        vm.prank(alice);
+        staking.deposit{value: 10 ether}();
+        staking.reportRewards{value: 1 ether}();
+        vm.prank(bob);
+        staking.deposit{value: 11 ether}();
+        assertEq(staking.balanceOf(bob), 10 ether);
+    }
+
+    function test_withdrawReturnsPrincipalPlusRewards() public {
+        vm.prank(alice);
+        staking.deposit{value: 10 ether}();
+        staking.reportRewards{value: 1 ether}();
+        vm.prank(alice);
+        staking.withdraw(10 ether);
+        assertEq(alice.balance, 101 ether);
+    }
+
+    function test_revertsOnZeroDeposit() public {
+        vm.prank(alice);
+        vm.expectRevert("Deposito vacio");
+        staking.deposit{value: 0}();
+    }
+
+    function test_onlyOwnerReportsRewards() public {
+        vm.deal(alice, 1 ether);
+        vm.prank(alice);
+        vm.expectRevert();
+        staking.reportRewards{value: 1 ether}();
+    }
+
+    function testFuzz_depositWithdrawWithoutRewards(uint256 amount) public {
+        amount = bound(amount, 1, 100 ether);
+        vm.startPrank(alice);
+        staking.deposit{value: amount}();
+        staking.withdraw(staking.balanceOf(alice));
+        vm.stopPrank();
+        assertEq(alice.balance, 100 ether);
+    }
+}
