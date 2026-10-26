@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {Test} from "forge-std/Test.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {LiquidStaking} from "../src/LiquidStaking.sol";
 
 contract LiquidStakingTest is Test {
@@ -87,5 +88,35 @@ contract LiquidStakingTest is Test {
         vm.prank(bob);
         vm.expectRevert("Shares cero");
         staking.deposit{value: 5 ether}(); // 5 ETH -> 0 shares
+    }
+
+    function test_pausedBlocksDeposit() public {
+        staking.pause();
+        vm.prank(alice);
+        vm.expectRevert(Pausable.EnforcedPause.selector);
+        staking.deposit{value: 1 ether}();
+    }
+
+    function test_pausedBlocksWithdraw() public {
+        vm.prank(alice);
+        staking.deposit{value: 1 ether}();
+        staking.pause();
+        vm.prank(alice);
+        vm.expectRevert(Pausable.EnforcedPause.selector);
+        staking.withdraw(1 ether);
+    }
+
+    function test_onlyOwnerCanPause() public {
+        vm.prank(alice);
+        vm.expectRevert();
+        staking.pause();
+    }
+
+    function test_unpauseRestoresOperation() public {
+        staking.pause();
+        staking.unpause();
+        vm.prank(alice);
+        staking.deposit{value: 1 ether}();
+        assertEq(staking.balanceOf(alice), 1 ether);
     }
 }

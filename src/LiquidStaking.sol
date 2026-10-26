@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract LiquidStaking is ERC20, Ownable, ReentrancyGuard {
+contract LiquidStaking is ERC20, Ownable, ReentrancyGuard, Pausable {
     uint256 public totalPooledEth;
 
     event Deposited(address indexed user, uint256 ethIn, uint256 sharesOut);
@@ -19,7 +20,7 @@ contract LiquidStaking is ERC20, Ownable, ReentrancyGuard {
         return (totalPooledEth * 1e18) / totalSupply();
     }
 
-    function deposit() external payable nonReentrant {
+    function deposit() external payable nonReentrant whenNotPaused {
         require(msg.value > 0, "Deposito vacio");
         uint256 shares = totalSupply() == 0
             ? msg.value
@@ -30,7 +31,7 @@ contract LiquidStaking is ERC20, Ownable, ReentrancyGuard {
         emit Deposited(msg.sender, msg.value, shares);
     }
 
-    function withdraw(uint256 shares) external nonReentrant {
+    function withdraw(uint256 shares) external nonReentrant whenNotPaused {
         require(
             shares > 0 && balanceOf(msg.sender) >= shares,
             "Saldo insuficiente"
@@ -47,5 +48,12 @@ contract LiquidStaking is ERC20, Ownable, ReentrancyGuard {
     function reportRewards() external payable onlyOwner {
         totalPooledEth += msg.value;
         emit RewardsReported(msg.value, exchangeRate());
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+    function unpause() external onlyOwner {
+        _unpause();
     }
 }
