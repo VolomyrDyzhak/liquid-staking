@@ -31,6 +31,7 @@ contract LiquidStaking is ERC20, Ownable, ReentrancyGuard, Pausable {
         emit Deposited(msg.sender, msg.value, shares);
     }
 
+    // slither-disable-start low-level-calls
     function withdraw(uint256 shares) external nonReentrant whenNotPaused {
         require(
             shares > 0 && balanceOf(msg.sender) >= shares,
@@ -40,10 +41,14 @@ contract LiquidStaking is ERC20, Ownable, ReentrancyGuard, Pausable {
         require(amount <= address(this).balance, "Sin liquidez");
         _burn(msg.sender, shares);
         totalPooledEth -= amount;
+
+        // Intencionado: call en lugar de transfer (limite de gas 2300).
+        // Protegido por nonReentrant y checks-effects-interactions.
         (bool ok, ) = msg.sender.call{value: amount}("");
         require(ok, "Fallo el envio");
         emit Withdrawn(msg.sender, shares, amount);
     }
+    // slither-disable-end low-level-calls
 
     function reportRewards() external payable onlyOwner {
         totalPooledEth += msg.value;
