@@ -1,1 +1,0 @@
--bash: volod@VoloPC:~/proyectos/liquid-staking$: No such file or directory
