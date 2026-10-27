@@ -1,19 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
-contract LiquidStaking is ERC20, Ownable, ReentrancyGuard, Pausable {
+contract LiquidStaking is ERC20, AccessControl, ReentrancyGuard, Pausable {
+    bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE");
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+
     uint256 public totalPooledEth;
 
     event Deposited(address indexed user, uint256 ethIn, uint256 sharesOut);
     event Withdrawn(address indexed user, uint256 sharesIn, uint256 ethOut);
     event RewardsReported(uint256 amount, uint256 newRate);
 
-    constructor() ERC20("Staked ETH Simple", "sETH") Ownable(msg.sender) {}
+    constructor(address admin) ERC20("Staked ETH Simple", "sETH") {
+        require(admin != address(0), "Admin invalido");
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+    }
 
     function exchangeRate() public view returns (uint256) {
         if (totalSupply() == 0) return 1e18;
@@ -50,15 +56,16 @@ contract LiquidStaking is ERC20, Ownable, ReentrancyGuard, Pausable {
     }
     // slither-disable-end low-level-calls
 
-    function reportRewards() external payable onlyOwner {
+    function reportRewards() external payable onlyRole(ORACLE_ROLE) {
         totalPooledEth += msg.value;
         emit RewardsReported(msg.value, exchangeRate());
     }
 
-    function pause() external onlyOwner {
+    function pause() external onlyRole(PAUSER_ROLE) {
         _pause();
     }
-    function unpause() external onlyOwner {
+
+    function unpause() external onlyRole(PAUSER_ROLE) {
         _unpause();
     }
 }

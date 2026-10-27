@@ -11,7 +11,9 @@ contract LiquidStakingTest is Test {
     address bob = makeAddr("bob");
 
     function setUp() public {
-        staking = new LiquidStaking();
+        staking = new LiquidStaking(address(this));
+        staking.grantRole(staking.ORACLE_ROLE(), address(this));
+        staking.grantRole(staking.PAUSER_ROLE(), address(this));
         vm.deal(alice, 100 ether);
         vm.deal(bob, 100 ether);
     }

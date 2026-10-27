@@ -10,10 +10,9 @@ contract LiquidStakingInvariantTest is Test {
     LiquidStakingHandler handler;
 
     function setUp() public {
-        staking = new LiquidStaking();
+        staking = new LiquidStaking(address(this));
         handler = new LiquidStakingHandler(staking);
-        // El handler necesita ser owner para poder llamar a reportRewards
-        staking.transferOwnership(address(handler));
+        staking.grantRole(staking.ORACLE_ROLE(), address(handler));
         targetContract(address(handler));
     }
 
