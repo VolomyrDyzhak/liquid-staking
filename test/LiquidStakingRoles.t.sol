@@ -28,16 +28,8 @@ contract LiquidStakingRolesTest is Test {
         vm.deal(alice, 10 ether);
     }
 
-    function _unauthorized(
-        address who,
-        bytes32 role
-    ) internal pure returns (bytes memory) {
-        return
-            abi.encodeWithSelector(
-                IAccessControl.AccessControlUnauthorizedAccount.selector,
-                who,
-                role
-            );
+    function _unauthorized(address who, bytes32 role) internal pure returns (bytes memory) {
+        return abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, who, role);
     }
 
     function test_adminStartsWithNoOperationalRoles() public view {
