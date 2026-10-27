@@ -56,7 +56,7 @@ contract LiquidStakingTest is Test {
         staking.deposit{value: 0}();
     }
 
-    function test_onlyOwnerReportsRewards() public {
+    function test_onlyOracleReportsRewards() public {
         vm.deal(alice, 1 ether);
         vm.prank(alice);
         vm.expectRevert();
@@ -108,7 +108,7 @@ contract LiquidStakingTest is Test {
         staking.withdraw(1 ether);
     }
 
-    function test_onlyOwnerCanPause() public {
+    function test_onlyPauserCanPause() public {
         vm.prank(alice);
         vm.expectRevert();
         staking.pause();

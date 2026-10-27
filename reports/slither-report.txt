@@ -1,4 +1,4 @@
 'forge clean' running (wd: /home/volod/proyectos/liquid-staking)
 'forge config --json' running
 'forge build --build-info --deny never --skip ./test/** ./script/** --force' running (wd: /home/volod/proyectos/liquid-staking)
-INFO:Slither:. analyzed (12 contracts with 102 detectors), 0 result(s) found
+INFO:Slither:. analyzed (15 contracts with 102 detectors), 0 result(s) found
