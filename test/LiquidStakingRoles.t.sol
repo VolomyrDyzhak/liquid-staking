@@ -12,8 +12,8 @@ contract LiquidStakingRolesTest is Test {
     address pauser = makeAddr("pauser");
     address alice = makeAddr("alice");
 
-    // Se guardan antes de usar vm.prank, porque una llamada como
-    // staking.ORACLE_ROLE() consumiría el prank.
+    // Stored before using vm.prank, because a call like
+    // staking.ORACLE_ROLE() would consume the prank.
     bytes32 ORACLE;
     bytes32 PAUSER;
     bytes32 ADMIN_ROLE;
