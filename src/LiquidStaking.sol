@@ -17,7 +17,7 @@ contract LiquidStaking is ERC20, AccessControl, ReentrancyGuard, Pausable {
     event RewardsReported(uint256 amount, uint256 newRate);
 
     constructor(address admin) ERC20("Staked ETH Simple", "sETH") {
-        require(admin != address(0), "Admin invalido");
+        require(admin != address(0), "Invalid admin");
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
     }
 
@@ -27,9 +27,9 @@ contract LiquidStaking is ERC20, AccessControl, ReentrancyGuard, Pausable {
     }
 
     function deposit() external payable nonReentrant whenNotPaused {
-        require(msg.value > 0, "Deposito vacio");
+        require(msg.value > 0, "Empty deposit");
         uint256 shares = totalSupply() == 0 ? msg.value : (msg.value * totalSupply()) / totalPooledEth;
-        require(shares > 0, "Shares cero");
+        require(shares > 0, "Zero shares");
         totalPooledEth += msg.value;
         _mint(msg.sender, shares);
         emit Deposited(msg.sender, msg.value, shares);
@@ -37,16 +37,16 @@ contract LiquidStaking is ERC20, AccessControl, ReentrancyGuard, Pausable {
 
     // slither-disable-start low-level-calls
     function withdraw(uint256 shares) external nonReentrant whenNotPaused {
-        require(shares > 0 && balanceOf(msg.sender) >= shares, "Saldo insuficiente");
+        require(shares > 0 && balanceOf(msg.sender) >= shares, "Insufficient balance");
         uint256 amount = (shares * totalPooledEth) / totalSupply();
-        require(amount <= address(this).balance, "Sin liquidez");
+        require(amount <= address(this).balance, "Insufficient liquidity");
         _burn(msg.sender, shares);
         totalPooledEth -= amount;
 
-        // Intencionado: call en lugar de transfer (limite de gas 2300).
-        // Protegido por nonReentrant y checks-effects-interactions.
+        // Intentional: call instead of transfer (2300 gas limit).
+        // Protected by nonReentrant and checks-effects-interactions.
         (bool ok,) = msg.sender.call{value: amount}("");
-        require(ok, "Fallo el envio");
+        require(ok, "Transfer failed");
         emit Withdrawn(msg.sender, shares, amount);
     }
     // slither-disable-end low-level-calls
