@@ -101,6 +101,18 @@ reports/              Slither report
 
 An [interactive demo of the concept](https://claude.ai/artifact/43fQoyEe3TSnNJWNXZkFy5) simulates the logic in the browser, without a blockchain.
 
+## Live deployment (Sepolia testnet)
+
+|          |                                                                                                                                                              |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Network  | Ethereum Sepolia (chain ID 11155111)                                                                                                                         |
+| Contract | [`0x11D69a0bd1C700a4d9F8527A41BC7a86e504c680`](https://sepolia.etherscan.io/address/0x11D69a0bd1C700a4d9F8527A41BC7a86e504c680#code) (verified on Etherscan) |
+| Roles    | One deployer account holds admin, pauser and oracle (testnet demo)                                                                                           |
+
+Rewards are simulated: an oracle account reports them manually. Testnet ETH has no value.
+
+**Deployment note:** deployed with `forge create`. After Sepolia's Glamsterdam upgrade (October 2026), `forge script` failed with out-of-gas because Foundry's local simulation underestimated contract creation costs; letting the node estimate gas fixed it.
+
 ## Contact
 
 Volomyr Dyzhak · [GitHub](https://github.com/VolomyrDyzhak) · volodymyrdyzhak@gmail.com
